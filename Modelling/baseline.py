@@ -12,6 +12,11 @@ from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, accuracy_score, precision_score, recall_score, f1_score
 
+from imblearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE, SMOTE
+
+
+import xgboost
 
 df = pd.read_csv("Data/fraud_oracle.csv")
 
@@ -21,6 +26,8 @@ y = df['FraudFound_P']
 X = df.drop(columns=['FraudFound_P', 'PolicyNumber', 'RepNumber'])
 
 results = []
+
+
 
 def evaluate_model(name, model, X_test, y_test):
     y_pred = model.predict(X_test)
@@ -34,6 +41,7 @@ def evaluate_model(name, model, X_test, y_test):
         "F1 Score": f1_score(y_test, y_pred),
         "ROC-AUC": roc_auc_score(y_test, y_prob)
     })
+
 
 categorical_cols = X.select_dtypes(include=['object']).columns.tolist()
 numeric_cols = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
