@@ -20,7 +20,7 @@ import xgboost as xgb
 df = pd.read_csv("Data/fraud_oracle.csv")
 
 y = df['FraudFound_P']
-X = df.drop(columns=['FraudFound_P', 'PolicyNumber', 'RepNumber'])
+X = df.drop(columns=['FraudFound_P', 'PolicyNumber', 'RepNumber', 'Year', 'Sex', 'Days_Policy_Claim', 'DriverRating', 'MaritalStatus', 'Make'])
 
 results = []
 
@@ -55,6 +55,7 @@ def evaluate_model(name, model, X_test, y_test):
 smote = SMOTE(random_state=42)
 smoteenn = SMOTEENN(random_state=42)
 
+#Maybe make this a string instead of 2 parameters**
 def make_pipeline(classifier, use_smote=False, use_smoteenn=False):
     steps = [('prep', preprocessor)]
     if use_smote:
@@ -69,6 +70,16 @@ classifiers = {
     "Logistic Regression":LogisticRegression(max_iter=1000),
     "Decision Tree":DecisionTreeClassifier(random_state=42),
     "Random Forest":RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1),
+    "XGBoost": xgb.XGBClassifier(
+        n_estimators=500,
+        max_depth=5,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        random_state=42,
+        n_jobs=-1,
+        eval_metric='logloss'
+    ),
 }
 
 for name, clf in classifiers.items():
@@ -85,7 +96,7 @@ for name, clf in classifiers.items():
     evaluate_model(name + " + SMOTE", model_smote, X_test, y_test)
     print(name + " + SMOTE Finished")
 
-    # SMOTEENN version
+    #SMOTEENN version
     clf_fresh2 = type(clf)(**clf.get_params())
     model_smoteenn = make_pipeline(clf_fresh2, use_smoteenn=True)
     model_smoteenn.fit(X_train, y_train)
